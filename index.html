@@ -63,7 +63,14 @@
             <div id="b" style="width:260px;display: Flex;flex-direction: row;
             padding:8px;background-color: rgb(33, 147, 253);border:1px solid black;border-radius: 30px;">
                 <img src="google.png" alt="" style="width:40px;height:40px;border-radius:20px;">
-                <button onclick="signin()" style="width:200px;border:none;background-color: rgb(33, 147, 253);font-family:googleRegular;color:white;font-size:18px">Sign in with Google</button>
+                <button onclick="signin()" style="width:200px;border:none;background-color: rgb(33, 147, 253);font-family:googleRegular;color:white;font-size:18px">Sign Up with Google</button>
+            </div>
+            <br>
+            <br>
+            <div id="b" style="width:260px;display: Flex;flex-direction: row;
+            padding:8px;background-color: rgb(255, 255, 255);border:1px solid black;border-radius: 30px;">
+                <img src="google.png" alt="" style="width:40px;height:40px;border-radius:20px;">
+                <button onclick="login()" style="width:200px;border:none;background-color: rgb(255, 255, 255);font-family:googleRegular;color:rgb(33, 147, 253);font-size:18px">Login in with Google</button>
             </div>
         </div>
         <br>
@@ -103,32 +110,7 @@
     firebase.initializeApp(firebaseConfig);
     var db=firebase.firestore();
     console.log("Initilized");
-    // var docRef = db.collection("users").doc("SF");
-    // function getItem()
-    // {
-    //     docRef.get().then((doc) => {
-    //         if (doc.exists) {
-    //             console.log("Document data:", doc.data());
-    //         } else {
-                
-    //             console.log("No such document!");
-    //         }
-    //     }).catch((error) => {
-    //         console.log("Error getting document:", error);
-    //     });
-        
-    // }
-    // db.collection("cities").doc("LA").set({
-    // name: "Los Angeles",
-    // state: "CA",
-    // country: "USA"
-    // })
-    // .then(() => {
-    // console.log("Document successfully written!");
-    // })
-    // .catch((error) => {
-    // console.error("Error writing document: ", error);
-    // });
+  
 
         function signin()
         {
@@ -139,17 +121,62 @@
                 console.log("error");
             });
             var provider = new firebase.auth.GoogleAuthProvider();
-       
+            firebase.auth()
+            .signInWithPopup(provider)
+            .then((result) => {
+             console.log(result);
+            var credential = result.credential;
+            var token = credential.accessToken;
+            var user = result.user;
+
+            // console.log(credential);
+            
+            db.collection("users").doc(user.uid).set({
+            name: user.displayName,
+            email: user.email,
+            profileurl: user.photoURL
+            })
+            .then(() => {
+            console.log("Document successfully written!");
+            })
+            .catch((error) => {
+            console.error("Error writing document: ", error);
+            });
+            console.log(token);
+            console.log(user.uid);
+            console.log(user.displayName);
+            console.log(user.email);
+            console.log(user.photoURL);
+            if(user)
+            {
+               //  location.href="home.html";
+                localStorage.setItem("session",true);
+                localStorage.setItem("uid",user.uid);
+            }
+            }).catch((error) => {
+            var errorCode = error.code;
+            var errorMessage = error.message;
+            var email = error.email;
+            var credential = error.credential;
+        });
+        }
+
+        function login()
+        {
+            var provider = new firebase.auth.GoogleAuthProvider();
+        
+            
             // console.log(provider);
             firebase.auth()
             .signInWithPopup(provider)
             .then((result) => {
-            // console.log(result);
+             console.log(result);
             var credential = result.credential;
             var token = credential.accessToken;
             var user = result.user;
-            // console.log(credential);
 
+            // console.log(credential);
+            
             db.collection("users").doc(user.uid).set({
             name: user.displayName,
             email: user.email,
@@ -179,7 +206,6 @@
             var credential = error.credential;
         });
         }
-   
 
 //         fetch("https://api.scaleserp.com/search?api_key=141D96272DBF4F9D8430EEA9A76249CA&q=pizza").then(res =>res.json()).then(data =>console.log(data));
     </script>
